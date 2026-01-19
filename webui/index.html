@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="bael-dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Agent Zero</title>
-    <link rel="icon" type="image/svg+xml" href="public/favicon.svg">
+    <title>Bael - Lord Of All</title>
+    <link rel="icon" type="image/svg+xml" href="public/bael-favicon.svg">
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="css/messages.css">
     <link rel="stylesheet" href="components/messages/action-buttons/simple-action-buttons.css">
@@ -16,6 +16,12 @@
     <link rel="stylesheet" href="css/scheduler-datepicker.css">
     <link rel="stylesheet" href="css/notification.css">
     <link rel="stylesheet" href="css/buttons.css">
+
+    <!-- BAEL Theme System -->
+    <link rel="stylesheet" href="css/bael-themes.css">
+
+    <!-- BAEL Core System - Load Early -->
+    <script src="js/bael-core.js"></script>
 
     <!-- Flatpickr for datetime picker -->
     <link rel="stylesheet" href="vendor/flatpickr/flatpickr.min.css">
@@ -135,6 +141,10 @@
 </head>
 
 <body class="dark-mode device-pointer" x-data>
+
+    <!-- BAEL Welcome Screen -->
+    <x-component path="bael-welcome.html"></x-component>
+
     <div class="container">
         <!-- Sidebar Overlay -->
         <div id="sidebar-overlay" x-data>
@@ -206,6 +216,8 @@
                                     @click="switchTab('developer')" title="Developer">Developer</div>
                                 <div class="settings-tab" :class="{'active': activeTab === 'scheduler'}"
                                     @click="switchTab('scheduler')" title="Task Scheduler">Task Scheduler</div>
+                                <div class="settings-tab" :class="{'active': activeTab === 'heisenberg'}"
+                                    @click="switchTab('heisenberg')" title="Heisenberg">Heisenberg</div>
                                 <div class="settings-tab" :class="{'active': activeTab === 'backup'}"
                                     @click="switchTab('backup')" title="Backup & Restore">Backup & Restore</div>
                             </div>
@@ -1218,6 +1230,73 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Heisenberg Tab Content -->
+                        <div id="heisenberg-tab-content" x-show="activeTab === 'heisenberg'" x-cloak>
+                            <nav>
+                                <ul>
+                                    <li>
+                                        <a href="#section-heisenberg-dashboard">
+                                            <img src="/public/heisenberg.svg" alt="Dashboard" onerror="this.src='/public/network.svg'">
+                                            <span>Dashboard</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#section-heisenberg-monitor">
+                                            <img src="/public/monitor.svg" alt="Monitor" onerror="this.src='/public/network.svg'">
+                                            <span>Monitor</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#section-heisenberg-queue">
+                                            <img src="/public/task_scheduler.svg" alt="Task Queue">
+                                            <span>Task Queue</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#section-heisenberg-instruments">
+                                            <img src="/public/tools.svg" alt="Instruments">
+                                            <span>Instruments</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#section-heisenberg-config">
+                                            <img src="/public/settings.svg" alt="Configuration">
+                                            <span>Configuration</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+
+                            <!-- Heisenberg Dashboard Section -->
+                            <div id="section-heisenberg-dashboard" class="section">
+                                <x-component path="settings/heisenberg/heisenberg-dashboard.html"></x-component>
+                            </div>
+
+                            <!-- Heisenberg Real-Time Monitor Section -->
+                            <div id="section-heisenberg-monitor" class="section">
+                                <div class="section-title">Real-Time Monitor</div>
+                                <div class="section-description">Live monitoring of Heisenberg system activity and events.</div>
+                                <x-component path="settings/heisenberg/realtime-monitor.html"></x-component>
+                            </div>
+
+                            <!-- Heisenberg Task Queue Section -->
+                            <div id="section-heisenberg-queue" class="section">
+                                <div class="section-title">Task Queue</div>
+                                <div class="section-description">Monitor Heisenberg system activity and task execution metrics.</div>
+                                <x-component path="settings/heisenberg/task-queue.html"></x-component>
+                            </div>
+
+                            <!-- Heisenberg Instruments Section -->
+                            <div id="section-heisenberg-instruments" class="section">
+                                <x-component path="settings/heisenberg/instruments-panel.html"></x-component>
+                            </div>
+
+                            <!-- Heisenberg Configuration Section -->
+                            <div id="section-heisenberg-config" class="section">
+                                <x-component path="settings/heisenberg/heisenberg-settings.html"></x-component>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
@@ -1236,6 +1315,77 @@
     <!-- Drag and Drop Overlay Component -->
     <x-component path="chat/attachments/dragDropOverlay.html"></x-component>
 
+    <!-- BAEL - Lord Of All Enhanced Systems -->
+    <script src="js/bael-command-palette.js"></script>
+    <script src="js/bael-focus-mode.js"></script>
+    <script src="js/bael-token-counter.js"></script>
+    <script src="js/bael-notes-panel.js"></script>
+    <script src="js/bael-thinking-viz.js"></script>
+    <script src="js/bael-prompt-library.js"></script>
+    <script src="js/bael-performance.js"></script>
+    <script src="js/bael-theme-editor.js"></script>
+    <script src="js/bael-split-view.js"></script>
+    <script src="js/bael-floating-action.js"></script>
+    <script src="js/bael-chat-search.js"></script>
+    <script src="js/bael-keybindings.js"></script>
+    <script src="js/bael-export.js"></script>
+    <script src="js/bael-context-menu.js"></script>
+    <script src="js/bael-session-stats.js"></script>
+    <script src="js/bael-markdown-preview.js"></script>
+    <script src="js/bael-notifications.js"></script>
+    <script src="js/bael-audio.js"></script>
+    <script src="js/bael-macro-recorder.js"></script>
+    <script src="js/bael-voice-commands.js"></script>
+    <script src="js/bael-memory-viz.js"></script>
+    <script src="js/bael-workflow-builder.js"></script>
+    <script src="js/bael-plugin-system.js"></script>
+    <script src="js/bael-multimodel.js"></script>
+    <script src="js/bael-timeline.js"></script>
+    <script src="js/bael-playground.js"></script>
+    <script src="js/bael-dashboard.js"></script>
+    <script src="js/bael-personas.js"></script>
+    <script src="js/bael-bookmarks.js"></script>
+    <script src="js/bael-templates.js"></script>
+    <script src="js/bael-accessibility.js"></script>
+    <script src="js/bael-diff-viewer.js"></script>
+    <script src="js/bael-terminal.js"></script>
+    <script src="js/bael-analytics.js"></script>
+    <script src="js/bael-snippets.js"></script>
+    <script src="js/bael-filetree.js"></script>
+    <script src="js/bael-quick-actions.js"></script>
+    <script src="js/bael-collaboration.js"></script>
+    <script src="js/bael-history.js"></script>
+    <script src="js/bael-auto-save.js"></script>
+    <script src="js/bael-branching.js"></script>
+    <script src="js/bael-rating.js"></script>
+    <script src="js/bael-shortcuts.js"></script>
+    <script src="js/bael-connection.js"></script>
+    <script src="js/bael-model-compare.js"></script>
+    <script src="js/bael-context-viz.js"></script>
+    <script src="js/bael-agent-monitor.js"></script>
+    <script src="js/bael-conversation-flow.js"></script>
+    <script src="js/bael-smart-suggestions.js"></script>
+    <script src="js/bael-session-manager.js"></script>
+    <script src="js/bael-message-pinning.js"></script>
+    <script src="js/bael-notification-center.js"></script>
+    <script src="js/bael-quick-reply.js"></script>
+    <script src="js/bael-response-cache.js"></script>
+
+    <!-- BAEL Phase 3 - Advanced Power Systems -->
+    <script src="js/bael-markdown-renderer.js"></script>
+    <script src="js/bael-sentiment-analyzer.js"></script>
+    <script src="js/bael-agent-roster.js"></script>
+    <script src="js/bael-image-generator.js"></script>
+    <script src="js/bael-task-scheduler.js"></script>
+    <script src="js/bael-conversation-branches.js"></script>
+    <script src="js/bael-api-monitor.js"></script>
+    <script src="js/bael-memory-browser.js"></script>
+    <script src="js/bael-code-refactor.js"></script>
+    <script src="js/bael-debug-console.js"></script>
+    <script src="js/bael-model-selector.js"></script>
+    <script src="js/bael-secret-vault.js"></script>
+    <script src="js/bael-network-inspector.js"></script>
+
     <!-- Register Service Worker for offline support and caching -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -1247,6 +1397,14 @@
                 });
             });
         }
+
+        // Initialize Bael theme from localStorage
+        (function() {
+            const savedTheme = localStorage.getItem('bael_theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        })();
     </script>
 
 </body>

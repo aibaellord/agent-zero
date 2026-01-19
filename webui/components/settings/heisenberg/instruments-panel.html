@@ -1,0 +1,349 @@
+<html>
+<head>
+    <style>
+        .instruments-panel {
+            background: var(--color-panel);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .instruments-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .instruments-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instruments-count {
+            background: var(--color-primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 10px;
+        }
+
+        .instruments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .instrument-card {
+            background: var(--color-background);
+            border-radius: 6px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .instrument-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+        }
+
+        .instrument-card.selected {
+            border-color: var(--color-primary);
+            background: rgba(var(--color-primary-rgb), 0.1);
+        }
+
+        .instrument-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instrument-icon {
+            font-size: 1.2rem;
+        }
+
+        .instrument-desc {
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .instrument-detail {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--color-background);
+            border-radius: 6px;
+        }
+
+        .instrument-detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .instrument-detail-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .instrument-close {
+            background: none;
+            border: none;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .instrument-content {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .instrument-content pre {
+            background: var(--color-panel);
+            padding: 0.5rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .instrument-content code {
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .instrument-run {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .instrument-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-panel);
+            color: var(--color-text);
+            font-size: 0.8rem;
+        }
+
+        .instrument-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--color-primary);
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .instrument-output {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: #1a1a1a;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            max-height: 150px;
+            overflow-y: auto;
+            color: #10b981;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-background);
+            color: var(--color-text);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="instruments-panel" x-data="instrumentsPanel">
+        <div class="instruments-header">
+            <div class="instruments-title">
+                <span>🔧</span>
+                <span>Power Instruments</span>
+                <span class="instruments-count" x-text="instruments.length"></span>
+            </div>
+        </div>
+
+        <input type="text"
+               class="search-box"
+               placeholder="Search instruments..."
+               x-model="searchQuery"
+               @input="filterInstruments()">
+
+        <div class="instruments-grid">
+            <template x-for="inst in filteredInstruments" :key="inst.name">
+                <div class="instrument-card"
+                     :class="{'selected': selectedInstrument?.name === inst.name}"
+                     @click="selectInstrument(inst)">
+                    <div class="instrument-name">
+                        <span class="instrument-icon" x-text="getIcon(inst.name)"></span>
+                        <span x-text="formatName(inst.name)"></span>
+                    </div>
+                    <div class="instrument-desc" x-text="getShortDesc(inst.description)"></div>
+                </div>
+            </template>
+        </div>
+
+        <template x-if="selectedInstrument">
+            <div class="instrument-detail">
+                <div class="instrument-detail-header">
+                    <div class="instrument-detail-title" x-text="formatName(selectedInstrument.name)"></div>
+                    <button class="instrument-close" @click="selectedInstrument = null">&times;</button>
+                </div>
+                <div class="instrument-content" x-html="formatDescription(selectedInstrument.description)"></div>
+                <div class="instrument-run">
+                    <input type="text"
+                           class="instrument-input"
+                           placeholder="Arguments (space separated)"
+                           x-model="runArgs">
+                    <button class="instrument-btn" @click="runInstrument()" :disabled="running">
+                        <span x-text="running ? 'Running...' : 'Run'"></span>
+                    </button>
+                </div>
+                <template x-if="output">
+                    <div class="instrument-output" x-text="output"></div>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <script type="module">
+        import { callJsonApi } from '/js/api.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('instrumentsPanel', () => ({
+                instruments: [],
+                filteredInstruments: [],
+                selectedInstrument: null,
+                searchQuery: '',
+                runArgs: '',
+                output: '',
+                running: false,
+
+                async init() {
+                    await this.loadInstruments();
+                },
+
+                async loadInstruments() {
+                    try {
+                        const response = await callJsonApi('/heisenberg_instruments', {
+                            action: 'list'
+                        });
+                        if (response.ok) {
+                            this.instruments = response.instruments;
+                            this.filteredInstruments = this.instruments;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load instruments:', e);
+                    }
+                },
+
+                filterInstruments() {
+                    const query = this.searchQuery.toLowerCase();
+                    this.filteredInstruments = this.instruments.filter(inst =>
+                        inst.name.toLowerCase().includes(query) ||
+                        (inst.description && inst.description.toLowerCase().includes(query))
+                    );
+                },
+
+                selectInstrument(inst) {
+                    this.selectedInstrument = inst;
+                    this.output = '';
+                    this.runArgs = '';
+                },
+
+                async runInstrument() {
+                    if (!this.selectedInstrument) return;
+
+                    this.running = true;
+                    this.output = 'Running...';
+
+                    try {
+                        const args = this.runArgs.split(' ').filter(a => a);
+                        const response = await callJsonApi('/heisenberg_instruments', {
+                            action: 'run',
+                            name: this.selectedInstrument.name,
+                            args: args
+                        });
+
+                        if (response.ok) {
+                            this.output = response.output || response.error_output || 'No output';
+                        } else {
+                            this.output = 'Error: ' + response.error;
+                        }
+                    } catch (e) {
+                        this.output = 'Error: ' + e.message;
+                    }
+
+                    this.running = false;
+                },
+
+                formatName(name) {
+                    return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                },
+
+                getShortDesc(desc) {
+                    if (!desc) return 'No description';
+                    const lines = desc.split('\n').filter(l => l.trim() && !l.startsWith('#'));
+                    return lines[0]?.slice(0, 100) || 'No description';
+                },
+
+                formatDescription(desc) {
+                    if (!desc) return '';
+                    // Basic markdown to HTML
+                    return desc
+                        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        .replace(/^## (.+)$/gm, '<h4>$1</h4>')
+                        .replace(/^### (.+)$/gm, '<h5>$1</h5>')
+                        .replace(/^- (.+)$/gm, '• $1<br>')
+                        .replace(/\n/g, '<br>');
+                },
+
+                getIcon(name) {
+                    const icons = {
+                        'web_scraper': '🌐',
+                        'api_integrator': '🔌',
+                        'data_transformer': '🔄',
+                        'report_generator': '📊',
+                        'security_scanner': '🔒',
+                        'git_manager': '🔀',
+                        'test_generator': '🧪',
+                        'backup_automation': '💾',
+                        'performance_profiler': '⚡',
+                        'dependency_analyzer': '📦',
+                        'database_helper': '🗄️',
+                        'notification_center': '🔔',
+                        'deep_research': '🔍',
+                        'code_analyzer': '📝',
+                        'system_health': '🏥',
+                        'project_generator': '🏗️',
+                        'auto_document': '📄',
+                        'task_automator': '⚙️'
+                    };
+                    return icons[name] || '🔧';
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

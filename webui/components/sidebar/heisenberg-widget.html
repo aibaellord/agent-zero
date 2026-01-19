@@ -1,0 +1,226 @@
+<html>
+<head>
+    <style>
+        .heisenberg-widget {
+            background: linear-gradient(135deg, rgba(var(--color-primary-rgb, 124, 58, 237), 0.1), transparent);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+        }
+
+        .heisenberg-widget-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .heisenberg-widget-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .heisenberg-widget-title .icon {
+            font-size: 1rem;
+        }
+
+        .heisenberg-widget-status {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .heisenberg-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .heisenberg-status-dot.online {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+        }
+
+        .heisenberg-status-dot.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        .heisenberg-status-dot.loading {
+            background: #eab308;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .heisenberg-widget-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .heisenberg-mini-stat {
+            text-align: center;
+            padding: 0.25rem;
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+
+        .heisenberg-mini-stat-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .heisenberg-mini-stat-label {
+            font-size: 0.6rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+        }
+
+        .heisenberg-widget-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .heisenberg-widget-btn {
+            flex: 1;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.7rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-background);
+            color: var(--color-text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .heisenberg-widget-btn:hover {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .heisenberg-widget-btn.primary {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .heisenberg-widget-btn.primary:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="heisenberg-widget" x-data="heisenbergWidget">
+        <div class="heisenberg-widget-header">
+            <div class="heisenberg-widget-title">
+                <span class="icon">🔬</span>
+                <span>Heisenberg</span>
+            </div>
+            <div class="heisenberg-widget-status">
+                <div class="heisenberg-status-dot"
+                     :class="status === 'online' ? 'online' : (status === 'loading' ? 'loading' : 'offline')">
+                </div>
+                <span style="font-size: 0.65rem; text-transform: uppercase;" x-text="status"></span>
+            </div>
+        </div>
+
+        <div class="heisenberg-widget-stats">
+            <div class="heisenberg-mini-stat">
+                <div class="heisenberg-mini-stat-value" x-text="systems"></div>
+                <div class="heisenberg-mini-stat-label">Systems</div>
+            </div>
+            <div class="heisenberg-mini-stat">
+                <div class="heisenberg-mini-stat-value" x-text="health + '%'"></div>
+                <div class="heisenberg-mini-stat-label">Health</div>
+            </div>
+            <div class="heisenberg-mini-stat">
+                <div class="heisenberg-mini-stat-value" x-text="calls"></div>
+                <div class="heisenberg-mini-stat-label">Calls</div>
+            </div>
+        </div>
+
+        <div class="heisenberg-widget-actions">
+            <button class="heisenberg-widget-btn" @click="openSettings">
+                ⚙️ Settings
+            </button>
+            <button class="heisenberg-widget-btn primary" @click="refresh" :disabled="status === 'loading'">
+                🔄 Refresh
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { callJsonApi } from '/js/api.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('heisenbergWidget', () => ({
+                status: 'loading',
+                systems: 0,
+                health: 0,
+                calls: 0,
+
+                async init() {
+                    await this.loadStatus();
+                    // Refresh every 60 seconds
+                    setInterval(() => this.loadStatus(), 60000);
+                },
+
+                async loadStatus() {
+                    this.status = 'loading';
+                    try {
+                        const response = await callJsonApi('/heisenberg_status', {
+                            action: 'status'
+                        });
+                        if (response.ok && response.initialized) {
+                            this.status = 'online';
+                            this.systems = response.systems?.online || 0;
+                            this.health = Math.round((response.systems?.online / response.systems?.total) * 100) || 0;
+                            this.calls = response.stats?.total_calls || 0;
+                        } else {
+                            this.status = 'offline';
+                            this.systems = 0;
+                            this.health = 0;
+                            this.calls = 0;
+                        }
+                    } catch (e) {
+                        console.error('Heisenberg widget error:', e);
+                        this.status = 'offline';
+                    }
+                },
+
+                async refresh() {
+                    await this.loadStatus();
+                },
+
+                openSettings() {
+                    // Open settings modal and switch to Heisenberg tab
+                    const event = new CustomEvent('open-settings-modal', {
+                        detail: { tab: 'heisenberg' }
+                    });
+                    window.dispatchEvent(event);
+
+                    // Also try Alpine store if available
+                    if (window.Alpine && Alpine.store('settings')) {
+                        Alpine.store('settings').show();
+                        setTimeout(() => {
+                            Alpine.store('settings').activeTab = 'heisenberg';
+                        }, 100);
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<html>
+<head>
+    <style>
+        .heisenberg-queue {
+            background: var(--color-panel);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .heisenberg-queue-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .heisenberg-queue-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heisenberg-queue-count {
+            background: var(--color-primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+        }
+
+        .heisenberg-queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .heisenberg-queue-item {
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .heisenberg-queue-item:hover {
+            border-color: var(--color-primary);
+        }
+
+        .heisenberg-queue-item.active {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .heisenberg-queue-item.pending {
+            border-color: #eab308;
+        }
+
+        .heisenberg-queue-item.completed {
+            opacity: 0.6;
+        }
+
+        .heisenberg-queue-item.failed {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .heisenberg-queue-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .heisenberg-queue-status.active {
+            background: #22c55e;
+            animation: pulse-green 1.5s infinite;
+        }
+
+        .heisenberg-queue-status.pending {
+            background: #eab308;
+        }
+
+        .heisenberg-queue-status.completed {
+            background: #6b7280;
+        }
+
+        .heisenberg-queue-status.failed {
+            background: #ef4444;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        }
+
+        .heisenberg-queue-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .heisenberg-queue-name {
+            font-weight: 500;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .heisenberg-queue-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .heisenberg-queue-time {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .heisenberg-queue-systems {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .heisenberg-queue-system-tag {
+            background: rgba(var(--color-primary-rgb, 124, 58, 237), 0.2);
+            color: var(--color-primary);
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.6rem;
+        }
+
+        .heisenberg-queue-empty {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        .heisenberg-queue-empty-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .heisenberg-queue-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .heisenberg-queue-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .heisenberg-queue-btn:hover {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .heisenberg-queue-progress {
+            height: 3px;
+            background: var(--color-border);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .heisenberg-queue-progress-bar {
+            height: 100%;
+            background: var(--color-primary);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="heisenberg-queue" x-data="heisenbergQueue">
+        <div class="heisenberg-queue-header">
+            <div class="heisenberg-queue-title">
+                <span>📊</span>
+                <span>Task Queue</span>
+                <span class="heisenberg-queue-count" x-text="tasks.length"></span>
+            </div>
+            <div class="heisenberg-queue-actions">
+                <button class="heisenberg-queue-btn" @click="clearCompleted">
+                    Clear Done
+                </button>
+                <button class="heisenberg-queue-btn" @click="refresh">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <template x-if="tasks.length === 0">
+            <div class="heisenberg-queue-empty">
+                <div class="heisenberg-queue-empty-icon">🌟</div>
+                <div>No tasks in queue</div>
+                <div style="font-size: 0.75rem; margin-top: 0.25rem;">Heisenberg is ready for action</div>
+            </div>
+        </template>
+
+        <template x-if="tasks.length > 0">
+            <div class="heisenberg-queue-list">
+                <template x-for="task in tasks" :key="task.id">
+                    <div class="heisenberg-queue-item" :class="task.status">
+                        <div class="heisenberg-queue-status" :class="task.status"></div>
+                        <div class="heisenberg-queue-info">
+                            <div class="heisenberg-queue-name" x-text="task.name"></div>
+                            <div class="heisenberg-queue-meta">
+                                <div class="heisenberg-queue-time">
+                                    <span>⏱️</span>
+                                    <span x-text="formatTime(task.duration)"></span>
+                                </div>
+                                <div class="heisenberg-queue-systems">
+                                    <template x-for="system in task.systems.slice(0, 3)" :key="system">
+                                        <span class="heisenberg-queue-system-tag" x-text="system"></span>
+                                    </template>
+                                    <template x-if="task.systems.length > 3">
+                                        <span class="heisenberg-queue-system-tag">+<span x-text="task.systems.length - 3"></span></span>
+                                    </template>
+                                </div>
+                            </div>
+                            <template x-if="task.status === 'active' && task.progress">
+                                <div class="heisenberg-queue-progress">
+                                    <div class="heisenberg-queue-progress-bar" :style="'width: ' + task.progress + '%'"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <script type="module">
+        import { callJsonApi } from '/js/api.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('heisenbergQueue', () => ({
+                tasks: [],
+
+                async init() {
+                    await this.loadTasks();
+                    // Refresh every 5 seconds
+                    setInterval(() => this.loadTasks(), 5000);
+                },
+
+                async loadTasks() {
+                    try {
+                        const response = await callJsonApi('/heisenberg_status', {
+                            action: 'metrics'
+                        });
+
+                        if (response.ok) {
+                            // Transform metrics into task-like format for display
+                            this.tasks = this.transformMetricsToTasks(response.metrics);
+                        }
+                    } catch (e) {
+                        console.error('Failed to load Heisenberg tasks:', e);
+                    }
+                },
+
+                transformMetricsToTasks(metrics) {
+                    if (!metrics) return [];
+
+                    const tasks = [];
+                    for (const [name, metric] of Object.entries(metrics)) {
+                        if (metric.calls > 0) {
+                            tasks.push({
+                                id: name,
+                                name: this.formatSystemName(name),
+                                status: metric.status === 'healthy' ? 'completed' :
+                                        metric.status === 'active' ? 'active' :
+                                        metric.errors > 0 ? 'failed' : 'pending',
+                                duration: metric.avg_time || 0,
+                                systems: [name],
+                                progress: null,
+                                calls: metric.calls,
+                                errors: metric.errors
+                            });
+                        }
+                    }
+
+                    // Sort by last activity (errors first, then by calls)
+                    return tasks.sort((a, b) => {
+                        if (a.status === 'failed' && b.status !== 'failed') return -1;
+                        if (b.status === 'failed' && a.status !== 'failed') return 1;
+                        return b.calls - a.calls;
+                    }).slice(0, 20); // Limit to 20 tasks
+                },
+
+                formatSystemName(name) {
+                    return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                },
+
+                formatTime(seconds) {
+                    if (!seconds || seconds < 0.001) return '< 1ms';
+                    if (seconds < 1) return Math.round(seconds * 1000) + 'ms';
+                    if (seconds < 60) return seconds.toFixed(1) + 's';
+                    return Math.round(seconds / 60) + 'm';
+                },
+
+                async clearCompleted() {
+                    this.tasks = this.tasks.filter(t => t.status !== 'completed');
+                },
+
+                async refresh() {
+                    await this.loadTasks();
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

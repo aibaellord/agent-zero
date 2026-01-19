@@ -1,0 +1,235 @@
+<!-- BAEL - LORD OF ALL: Animated Logo Component -->
+<div x-data="baelLogoComponent()" class="bael-logo-container" :class="{ 'active': isHovered }"
+     @mouseenter="isHovered = true" @mouseleave="isHovered = false">
+
+    <svg class="bael-animated-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Animated gradient -->
+            <linearGradient id="baelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff3366">
+                    <animate attributeName="stop-color" values="#ff3366;#ff6699;#ff3366" dur="3s" repeatCount="indefinite"/>
+                </stop>
+                <stop offset="50%" style="stop-color:#cc2952">
+                    <animate attributeName="stop-color" values="#cc2952;#ff3366;#cc2952" dur="3s" repeatCount="indefinite"/>
+                </stop>
+                <stop offset="100%" style="stop-color:#991f3d">
+                    <animate attributeName="stop-color" values="#991f3d;#cc2952;#991f3d" dur="3s" repeatCount="indefinite"/>
+                </stop>
+            </linearGradient>
+
+            <!-- Glow filter -->
+            <filter id="baelGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+
+            <!-- Pulse filter -->
+            <filter id="baelPulse">
+                <feGaussianBlur stdDeviation="2">
+                    <animate attributeName="stdDeviation" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+                </feGaussianBlur>
+            </filter>
+
+            <!-- Outer ring mask -->
+            <mask id="ringMask">
+                <circle cx="100" cy="100" r="85" fill="white"/>
+                <circle cx="100" cy="100" r="75" fill="black"/>
+            </mask>
+        </defs>
+
+        <!-- Background circle with pulse -->
+        <circle cx="100" cy="100" r="95" fill="none" stroke="url(#baelGradient)" stroke-width="1" opacity="0.3">
+            <animate attributeName="r" values="95;98;95" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.3;0.5;0.3" dur="3s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Rotating outer ring -->
+        <g mask="url(#ringMask)">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#baelGradient)" stroke-width="12" stroke-dasharray="40 20" filter="url(#baelGlow)">
+                <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="20s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+
+        <!-- Inner spinning ring -->
+        <circle cx="100" cy="100" r="65" fill="none" stroke="#ff3366" stroke-width="2" stroke-dasharray="10 5" opacity="0.6">
+            <animateTransform attributeName="transform" type="rotate" from="360 100 100" to="0 100 100" dur="15s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Hexagram base -->
+        <g filter="url(#baelGlow)">
+            <!-- Upward triangle -->
+            <polygon points="100,35 145,115 55,115" fill="none" stroke="url(#baelGradient)" stroke-width="3">
+                <animate attributeName="stroke-dasharray" values="0 300;300 0;0 300" dur="4s" repeatCount="indefinite"/>
+            </polygon>
+            <!-- Downward triangle -->
+            <polygon points="100,135 55,55 145,55" fill="none" stroke="url(#baelGradient)" stroke-width="3">
+                <animate attributeName="stroke-dasharray" values="300 0;0 300;300 0" dur="4s" repeatCount="indefinite"/>
+            </polygon>
+        </g>
+
+        <!-- Center eye -->
+        <g class="bael-eye">
+            <!-- Outer eye shape -->
+            <ellipse cx="100" cy="85" rx="30" ry="18" fill="none" stroke="#ff3366" stroke-width="2">
+                <animate attributeName="ry" values="18;12;18" dur="4s" repeatCount="indefinite"/>
+            </ellipse>
+
+            <!-- Iris -->
+            <circle cx="100" cy="85" r="12" fill="url(#baelGradient)">
+                <animate attributeName="r" values="12;10;12" dur="4s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Pupil -->
+            <circle cx="100" cy="85" r="5" fill="#0a0a0f">
+                <animate attributeName="r" values="5;3;5" dur="4s" repeatCount="indefinite"/>
+                <animate attributeName="cx" values="100;102;98;100" dur="6s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Eye gleam -->
+            <circle cx="96" cy="82" r="2" fill="#fff" opacity="0.8">
+                <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+
+        <!-- Crown element -->
+        <g class="bael-crown" transform="translate(100, 25)">
+            <path d="M-25,0 L-20,-15 L-10,-5 L0,-20 L10,-5 L20,-15 L25,0 Z"
+                  fill="url(#baelGradient)"
+                  stroke="#ff3366"
+                  stroke-width="1">
+                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+            </path>
+        </g>
+
+        <!-- Orbiting particles -->
+        <g class="particles">
+            <circle r="3" fill="#ff3366">
+                <animateMotion dur="8s" repeatCount="indefinite">
+                    <mpath href="#orbitPath1"/>
+                </animateMotion>
+                <animate attributeName="opacity" values="0;1;0" dur="8s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="2" fill="#00ffcc">
+                <animateMotion dur="6s" repeatCount="indefinite">
+                    <mpath href="#orbitPath2"/>
+                </animateMotion>
+                <animate attributeName="opacity" values="0;1;0" dur="6s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="2.5" fill="#ff6699">
+                <animateMotion dur="10s" repeatCount="indefinite">
+                    <mpath href="#orbitPath3"/>
+                </animateMotion>
+                <animate attributeName="opacity" values="0;1;0" dur="10s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+
+        <!-- Hidden orbit paths -->
+        <defs>
+            <path id="orbitPath1" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0" fill="none"/>
+            <path id="orbitPath2" d="M100,100 m-60,0 a60,60 0 1,0 120,0 a60,60 0 1,0 -120,0" fill="none"/>
+            <path id="orbitPath3" d="M100,100 m-90,0 a90,40 0 1,1 180,0 a90,40 0 1,1 -180,0" fill="none"/>
+        </defs>
+
+        <!-- Text arc -->
+        <defs>
+            <path id="textArc" d="M30,100 A70,70 0 0,1 170,100" fill="none"/>
+        </defs>
+        <text fill="#ff3366" font-size="10" font-weight="bold" letter-spacing="4" opacity="0.7">
+            <textPath href="#textArc" startOffset="50%" text-anchor="middle">
+                LORD OF ALL
+            </textPath>
+            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+        </text>
+    </svg>
+
+    <!-- Logo text below -->
+    <div class="bael-logo-text">
+        <span class="bael-name">BAEL</span>
+        <span class="bael-tagline">Autonomous Sovereign Entity</span>
+    </div>
+</div>
+
+<style>
+    .bael-logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .bael-logo-container.active {
+        transform: scale(1.05);
+    }
+
+    .bael-animated-logo {
+        width: 150px;
+        height: 150px;
+        filter: drop-shadow(0 0 20px rgba(255, 51, 102, 0.3));
+        transition: filter 0.3s ease;
+    }
+
+    .bael-logo-container.active .bael-animated-logo {
+        filter: drop-shadow(0 0 40px rgba(255, 51, 102, 0.5));
+    }
+
+    .bael-logo-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .bael-name {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: 8px;
+        background: linear-gradient(135deg, #ff3366, #ff6699, #ff3366);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: baelGradientShift 3s ease infinite;
+    }
+
+    .bael-tagline {
+        font-size: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--bael-text-muted, #666);
+    }
+
+    @keyframes baelGradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .bael-animated-logo {
+            width: 100px;
+            height: 100px;
+        }
+
+        .bael-name {
+            font-size: 20px;
+            letter-spacing: 5px;
+        }
+
+        .bael-tagline {
+            font-size: 8px;
+        }
+    }
+</style>
+
+<script>
+    function baelLogoComponent() {
+        return {
+            isHovered: false
+        }
+    }
+</script>

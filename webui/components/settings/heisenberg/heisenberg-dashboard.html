@@ -1,0 +1,356 @@
+<html>
+<head>
+    <style>
+        .heisenberg-dashboard {
+            background: var(--color-panel);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .heisenberg-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .heisenberg-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heisenberg-title .icon {
+            font-size: 1.5rem;
+        }
+
+        .heisenberg-status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .heisenberg-status-badge.online {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .heisenberg-status-badge.offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .heisenberg-status-badge.initializing {
+            background: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+
+        .heisenberg-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .heisenberg-stat {
+            background: var(--color-background);
+            border-radius: 6px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .heisenberg-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .heisenberg-stat-label {
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+        }
+
+        .heisenberg-systems {
+            margin-top: 1rem;
+        }
+
+        .heisenberg-category {
+            margin-bottom: 0.75rem;
+        }
+
+        .heisenberg-category-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .heisenberg-system-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .heisenberg-system-chip {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: var(--color-background);
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .heisenberg-system-chip.online {
+            border-left: 2px solid #22c55e;
+        }
+
+        .heisenberg-system-chip.offline {
+            border-left: 2px solid #ef4444;
+            opacity: 0.6;
+        }
+
+        .heisenberg-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .heisenberg-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .heisenberg-btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .heisenberg-btn-secondary {
+            background: var(--color-background);
+            color: var(--color-text);
+        }
+
+        .heisenberg-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .heisenberg-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        .heisenberg-loading .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--color-border);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .heisenberg-mini-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+        }
+
+        .heisenberg-progress {
+            height: 4px;
+            background: var(--color-background);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .heisenberg-progress-bar {
+            height: 100%;
+            background: var(--color-primary);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="heisenberg-dashboard" x-data="heisenbergDashboard">
+        <div class="heisenberg-header">
+            <div class="heisenberg-title">
+                <span class="icon">🔬</span>
+                <span>Heisenberg Singularity</span>
+            </div>
+            <span class="heisenberg-status-badge"
+                  :class="dashboard.initialized ? 'online' : 'offline'">
+                <span x-text="dashboard.initialized ? 'ONLINE' : 'OFFLINE'"></span>
+            </span>
+        </div>
+
+        <template x-if="loading">
+            <div class="heisenberg-loading">
+                <div class="spinner"></div>
+                <div>Loading systems...</div>
+            </div>
+        </template>
+
+        <template x-if="!loading && dashboard.initialized">
+            <div>
+                <!-- Stats Grid -->
+                <div class="heisenberg-stats">
+                    <div class="heisenberg-stat">
+                        <div class="heisenberg-stat-value" x-text="dashboard.systems?.online || 0"></div>
+                        <div class="heisenberg-stat-label">Systems Online</div>
+                    </div>
+                    <div class="heisenberg-stat">
+                        <div class="heisenberg-stat-value" x-text="dashboard.stats?.total_calls || 0"></div>
+                        <div class="heisenberg-stat-label">Total Calls</div>
+                    </div>
+                    <div class="heisenberg-stat">
+                        <div class="heisenberg-stat-value" x-text="Math.round((dashboard.stats?.success_rate || 0) * 100) + '%'"></div>
+                        <div class="heisenberg-stat-label">Success Rate</div>
+                    </div>
+                    <div class="heisenberg-stat">
+                        <div class="heisenberg-stat-value" x-text="formatUptime(dashboard.uptime)"></div>
+                        <div class="heisenberg-stat-label">Uptime</div>
+                    </div>
+                </div>
+
+                <!-- Health Progress -->
+                <div class="heisenberg-mini-stat">
+                    System Health: <span x-text="dashboard.systems?.online + '/' + dashboard.systems?.total"></span>
+                </div>
+                <div class="heisenberg-progress">
+                    <div class="heisenberg-progress-bar"
+                         :style="'width: ' + (dashboard.systems?.online / dashboard.systems?.total * 100) + '%'">
+                    </div>
+                </div>
+
+                <!-- Systems by Category -->
+                <div class="heisenberg-systems">
+                    <template x-for="(systems, category) in dashboard.categories" :key="category">
+                        <div class="heisenberg-category" x-show="systems > 0">
+                            <div class="heisenberg-category-title" x-text="category"></div>
+                            <div class="heisenberg-system-list">
+                                <template x-for="sys in getSystemsInCategory(category)" :key="sys.name">
+                                    <div class="heisenberg-system-chip" :class="sys.status">
+                                        <span x-text="sys.status === 'online' ? '●' : '○'"></span>
+                                        <span x-text="formatSystemName(sys.name)"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="!loading && !dashboard.initialized">
+            <div class="heisenberg-loading">
+                <div>Heisenberg not initialized</div>
+            </div>
+        </template>
+
+        <!-- Actions -->
+        <div class="heisenberg-actions">
+            <button class="heisenberg-btn heisenberg-btn-primary" @click="refresh()">
+                Refresh
+            </button>
+            <button class="heisenberg-btn heisenberg-btn-secondary" @click="openDetails()">
+                Details
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { callJsonApi } from '/js/api.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('heisenbergDashboard', () => ({
+                loading: true,
+                dashboard: {},
+                systemDetails: {},
+
+                async init() {
+                    await this.loadDashboard();
+                    // Auto-refresh every 30 seconds
+                    setInterval(() => this.loadDashboard(), 30000);
+                },
+
+                async loadDashboard() {
+                    try {
+                        const response = await callJsonApi('/heisenberg_status', {
+                            action: 'dashboard'
+                        });
+                        if (response.ok) {
+                            this.dashboard = response.dashboard;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load Heisenberg dashboard:', e);
+                    }
+                    this.loading = false;
+                },
+
+                async loadSystemDetails() {
+                    try {
+                        const response = await callJsonApi('/heisenberg_status', {
+                            action: 'systems'
+                        });
+                        if (response.ok) {
+                            this.systemDetails = response.categories;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load system details:', e);
+                    }
+                },
+
+                getSystemsInCategory(category) {
+                    return this.systemDetails[category] || [];
+                },
+
+                async refresh() {
+                    this.loading = true;
+                    await this.loadDashboard();
+                    await this.loadSystemDetails();
+                },
+
+                openDetails() {
+                    // Open detailed modal or navigate to details page
+                    window.dispatchEvent(new CustomEvent('open-heisenberg-modal'));
+                },
+
+                formatUptime(seconds) {
+                    if (!seconds) return '0s';
+                    if (seconds < 60) return Math.round(seconds) + 's';
+                    if (seconds < 3600) return Math.round(seconds / 60) + 'm';
+                    return Math.round(seconds / 3600) + 'h';
+                },
+
+                formatSystemName(name) {
+                    return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

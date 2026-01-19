@@ -1,0 +1,190 @@
+<html>
+<head>
+    <style>
+        .heisenberg-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(var(--color-primary-rgb, 124, 58, 237), 0.1);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
+
+        .heisenberg-indicator:hover {
+            background: rgba(var(--color-primary-rgb, 124, 58, 237), 0.2);
+            border-color: var(--color-primary);
+        }
+
+        .heisenberg-indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .heisenberg-indicator-dot.active {
+            background: #22c55e;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+            animation: heisenberg-pulse 2s infinite;
+        }
+
+        .heisenberg-indicator-dot.inactive {
+            background: #6b7280;
+        }
+
+        @keyframes heisenberg-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+
+        .heisenberg-indicator-label {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .heisenberg-indicator-count {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .heisenberg-tooltip {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .heisenberg-indicator:hover .heisenberg-tooltip {
+            display: block;
+        }
+
+        .heisenberg-tooltip-title {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .heisenberg-tooltip-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .heisenberg-tooltip-stat {
+            background: var(--color-background);
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .heisenberg-tooltip-stat-label {
+            color: var(--color-text-secondary);
+        }
+
+        .heisenberg-tooltip-stat-value {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="heisenberg-indicator" x-data="heisenbergIndicator" @click="openHeisenbergSettings">
+        <div class="heisenberg-indicator-dot" :class="active ? 'active' : 'inactive'"></div>
+        <span class="heisenberg-indicator-label">Heisenberg</span>
+        <span class="heisenberg-indicator-count" x-text="systemCount"></span>
+
+        <div class="heisenberg-tooltip">
+            <div class="heisenberg-tooltip-title">
+                <span>🔬</span>
+                <span>Heisenberg Singularity</span>
+            </div>
+            <div class="heisenberg-tooltip-stats">
+                <div class="heisenberg-tooltip-stat">
+                    <div class="heisenberg-tooltip-stat-label">Online</div>
+                    <div class="heisenberg-tooltip-stat-value" x-text="online + '/' + total"></div>
+                </div>
+                <div class="heisenberg-tooltip-stat">
+                    <div class="heisenberg-tooltip-stat-label">Health</div>
+                    <div class="heisenberg-tooltip-stat-value" x-text="health + '%'"></div>
+                </div>
+                <div class="heisenberg-tooltip-stat">
+                    <div class="heisenberg-tooltip-stat-label">Calls</div>
+                    <div class="heisenberg-tooltip-stat-value" x-text="calls"></div>
+                </div>
+                <div class="heisenberg-tooltip-stat">
+                    <div class="heisenberg-tooltip-stat-label">Success</div>
+                    <div class="heisenberg-tooltip-stat-value" x-text="successRate + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { callJsonApi } from '/js/api.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('heisenbergIndicator', () => ({
+                active: false,
+                systemCount: '...',
+                online: 0,
+                total: 0,
+                health: 0,
+                calls: 0,
+                successRate: 0,
+
+                async init() {
+                    await this.loadStatus();
+                    setInterval(() => this.loadStatus(), 30000);
+                },
+
+                async loadStatus() {
+                    try {
+                        const response = await callJsonApi('/heisenberg_status', {
+                            action: 'status'
+                        });
+                        if (response.ok && response.initialized) {
+                            this.active = true;
+                            this.online = response.systems?.online || 0;
+                            this.total = response.systems?.total || 0;
+                            this.systemCount = this.online;
+                            this.health = Math.round((this.online / this.total) * 100) || 0;
+                            this.calls = response.stats?.total_calls || 0;
+                            this.successRate = Math.round((response.stats?.success_rate || 0) * 100);
+                        } else {
+                            this.active = false;
+                            this.systemCount = 'OFF';
+                        }
+                    } catch (e) {
+                        this.active = false;
+                        this.systemCount = '!';
+                    }
+                },
+
+                openHeisenbergSettings() {
+                    if (window.Alpine && Alpine.store('settings')) {
+                        Alpine.store('settings').show();
+                        setTimeout(() => {
+                            Alpine.store('settings').activeTab = 'heisenberg';
+                        }, 100);
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

@@ -29,15 +29,6 @@
                             stroke-width="3" x-bind:opacity="$store.chatTop.connected ? 0 : 1" />
                     </svg>
                 </div>
-                <!-- Notification Toggle positioned next to time-date -->
-                <x-component path="notifications/notification-icons.html"></x-component>
-                <!-- Project Selector -->
-                <x-component path="projects/project-selector.html"></x-component>
-            </div>
-
-        </template>
-    </div>
-
-</body>
-
+                    <!-- Heisenberg Status Indicator -->
+                    <x-component path="chat/heisenberg-indicator.html"></x-component>
 </html>

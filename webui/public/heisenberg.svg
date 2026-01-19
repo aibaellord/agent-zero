@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Outer hexagon representing quantum uncertainty -->
+  <path d="M12 2l8.5 5v10L12 22l-8.5-5V7L12 2z" opacity="0.6"/>
+
+  <!-- Inner quantum probability cloud -->
+  <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3"/>
+
+  <!-- Electron orbits -->
+  <ellipse cx="12" cy="12" rx="7" ry="3" transform="rotate(30 12 12)" opacity="0.7"/>
+  <ellipse cx="12" cy="12" rx="7" ry="3" transform="rotate(-30 12 12)" opacity="0.7"/>
+  <ellipse cx="12" cy="12" rx="7" ry="3" transform="rotate(90 12 12)" opacity="0.7"/>
+
+  <!-- Core nucleus - Heisenberg principle symbol -->
+  <circle cx="12" cy="12" r="2" fill="currentColor"/>
+
+  <!-- Uncertainty arrows -->
+  <path d="M12 6v-2M12 20v-2" stroke-dasharray="1,1"/>
+  <path d="M6 12h-2M20 12h-2" stroke-dasharray="1,1"/>
+</svg>

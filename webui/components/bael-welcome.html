@@ -1,0 +1,331 @@
+<!-- BAEL - Lord Of All: Welcome Screen Component -->
+<div x-data="baelWelcome()"
+     x-show="showWelcome"
+     x-transition:enter="transition ease-out duration-500"
+     x-transition:enter-start="opacity-0 scale-95"
+     x-transition:enter-end="opacity-100 scale-100"
+     x-transition:leave="transition ease-in duration-300"
+     x-transition:leave-start="opacity-100 scale-100"
+     x-transition:leave-end="opacity-0 scale-95"
+     class="bael-welcome">
+
+    <div class="bw-content">
+        <div class="bw-logo-container">
+            <img src="public/bael-logo.svg" alt="Bael" class="bw-logo">
+            <div class="bw-glow"></div>
+        </div>
+
+        <h1 class="bw-title">BAEL</h1>
+        <p class="bw-subtitle">Lord Of All</p>
+
+        <div class="bw-tagline">
+            <span class="bw-tagline-text">Powered by Heisenberg Singularity</span>
+            <span class="bw-tagline-icon">🧠</span>
+        </div>
+
+        <div class="bw-features">
+            <div class="bw-feature">
+                <span class="bw-feature-icon">⚡</span>
+                <span class="bw-feature-text">Quantum Coherent Reasoning</span>
+            </div>
+            <div class="bw-feature">
+                <span class="bw-feature-icon">🔮</span>
+                <span class="bw-feature-text">Multi-Dimensional Cognition</span>
+            </div>
+            <div class="bw-feature">
+                <span class="bw-feature-icon">∞</span>
+                <span class="bw-feature-text">Infinite Potential</span>
+            </div>
+        </div>
+
+        <div class="bw-shortcuts">
+            <div class="bw-shortcut">
+                <kbd>Ctrl</kbd> + <kbd>K</kbd>
+                <span>Command Palette</span>
+            </div>
+            <div class="bw-shortcut">
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>
+                <span>Focus Mode</span>
+            </div>
+            <div class="bw-shortcut">
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+                <span>Prompt Library</span>
+            </div>
+        </div>
+
+        <button class="bw-start-btn" @click="dismiss()">
+            <span>Begin Session</span>
+            <span class="bw-arrow">→</span>
+        </button>
+
+        <label class="bw-no-show">
+            <input type="checkbox" x-model="dontShowAgain" @change="updatePreference()">
+            <span>Don't show this again</span>
+        </label>
+    </div>
+
+    <div class="bw-particles" id="bw-particles"></div>
+</div>
+
+<style>
+    .bael-welcome {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-background);
+        overflow: hidden;
+    }
+
+    .bw-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 40px;
+    }
+
+    .bw-logo-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 30px;
+    }
+
+    .bw-logo {
+        width: 100%;
+        height: 100%;
+        animation: bw-float 4s ease-in-out infinite;
+    }
+
+    @keyframes bw-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .bw-glow {
+        position: absolute;
+        inset: -20px;
+        background: radial-gradient(circle, rgba(220, 20, 60, 0.3) 0%, transparent 70%);
+        animation: bw-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes bw-pulse {
+        0%, 100% { opacity: 0.5; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.1); }
+    }
+
+    .bw-title {
+        font-size: 64px;
+        font-weight: 900;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        letter-spacing: 10px;
+        text-shadow: 0 0 50px rgba(220, 20, 60, 0.5);
+    }
+
+    .bw-subtitle {
+        font-size: 18px;
+        color: var(--color-text-secondary);
+        margin: 10px 0 0;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+    }
+
+    .bw-tagline {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 30px 0;
+        padding: 10px 20px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-full);
+        display: inline-flex;
+    }
+
+    .bw-tagline-text {
+        color: var(--color-text-secondary);
+        font-size: 14px;
+    }
+
+    .bw-features {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin: 40px 0;
+    }
+
+    .bw-feature {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .bw-feature-icon {
+        font-size: 32px;
+    }
+
+    .bw-feature-text {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+    }
+
+    .bw-shortcuts {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 40px 0;
+    }
+
+    .bw-shortcut {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+    }
+
+    .bw-shortcut kbd {
+        padding: 4px 8px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 11px;
+    }
+
+    .bw-start-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 40px;
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: var(--radius-full);
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-lg), var(--shadow-glow);
+        transition: all 0.3s;
+    }
+
+    .bw-start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(220, 20, 60, 0.4);
+    }
+
+    .bw-arrow {
+        transition: transform 0.3s;
+    }
+
+    .bw-start-btn:hover .bw-arrow {
+        transform: translateX(5px);
+    }
+
+    .bw-no-show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 30px;
+        font-size: 13px;
+        color: var(--color-text-muted);
+        cursor: pointer;
+    }
+
+    .bw-no-show input {
+        cursor: pointer;
+    }
+
+    .bw-particles {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .bw-particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: bw-particle-float 10s linear infinite;
+    }
+
+    @keyframes bw-particle-float {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        10% { opacity: 0.3; }
+        90% { opacity: 0.3; }
+        100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+        .bw-title {
+            font-size: 40px;
+            letter-spacing: 5px;
+        }
+
+        .bw-features {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bw-shortcuts {
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+</style>
+
+<script>
+    function baelWelcome() {
+        return {
+            showWelcome: !localStorage.getItem('bael_hide_welcome'),
+            dontShowAgain: false,
+
+            init() {
+                if (this.showWelcome) {
+                    this.createParticles();
+                }
+            },
+
+            dismiss() {
+                this.showWelcome = false;
+            },
+
+            updatePreference() {
+                if (this.dontShowAgain) {
+                    localStorage.setItem('bael_hide_welcome', 'true');
+                } else {
+                    localStorage.removeItem('bael_hide_welcome');
+                }
+            },
+
+            createParticles() {
+                const container = document.getElementById('bw-particles');
+                if (!container) return;
+
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'bw-particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDuration = (5 + Math.random() * 10) + 's';
+                    particle.style.animationDelay = Math.random() * 5 + 's';
+                    particle.style.width = (2 + Math.random() * 4) + 'px';
+                    particle.style.height = particle.style.width;
+                    container.appendChild(particle);
+                }
+            }
+        };
+    }
+</script>

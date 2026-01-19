@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bael-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B0000;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#DC143C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF4500;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Outer ring - Crown of dominion -->
+  <circle cx="50" cy="50" r="45" fill="none" stroke="url(#bael-gradient)" stroke-width="3" opacity="0.8"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="url(#bael-gradient)" stroke-width="1" opacity="0.5"/>
+
+  <!-- Inner hexagram - Symbol of power -->
+  <polygon points="50,15 61,35 85,35 67,50 75,75 50,60 25,75 33,50 15,35 39,35"
+           fill="url(#bael-gradient)" opacity="0.9" filter="url(#glow)"/>
+
+  <!-- Central eye - All-seeing -->
+  <ellipse cx="50" cy="45" rx="12" ry="8" fill="#1a1a1a"/>
+  <ellipse cx="50" cy="45" rx="10" ry="6" fill="url(#bael-gradient)"/>
+  <circle cx="50" cy="45" r="4" fill="#1a1a1a"/>
+  <circle cx="52" cy="43" r="1.5" fill="#fff" opacity="0.8"/>
+
+  <!-- Crown points -->
+  <path d="M30,25 L35,35 M50,10 L50,20 M70,25 L65,35"
+        stroke="url(#bael-gradient)" stroke-width="2" fill="none" filter="url(#glow)"/>
+
+  <!-- Bottom emblem -->
+  <path d="M35,70 Q50,85 65,70" stroke="url(#bael-gradient)" stroke-width="2" fill="none"/>
+
+  <!-- Runes of power -->
+  <text x="50" y="92" text-anchor="middle" fill="url(#bael-gradient)"
+        font-family="serif" font-size="8" font-weight="bold">BAEL</text>
+</svg>

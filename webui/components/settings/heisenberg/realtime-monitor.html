@@ -1,0 +1,323 @@
+<html>
+<head>
+    <style>
+        .heisenberg-monitor {
+            background: var(--color-panel);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .heisenberg-monitor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .heisenberg-monitor-title {
+            font-weight: 600;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heisenberg-monitor-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .heisenberg-monitor-status {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+        }
+
+        .heisenberg-monitor-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .heisenberg-monitor-dot.live {
+            background: #22c55e;
+            animation: blink 1s infinite;
+        }
+
+        .heisenberg-monitor-dot.paused {
+            background: #eab308;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .heisenberg-monitor-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .heisenberg-monitor-btn:hover {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .heisenberg-monitor-log {
+            background: #0d0d0d;
+            border-radius: 4px;
+            padding: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+        }
+
+        .heisenberg-log-entry {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .heisenberg-log-time {
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+
+        .heisenberg-log-type {
+            font-weight: 600;
+            flex-shrink: 0;
+            width: 60px;
+        }
+
+        .heisenberg-log-type.info { color: #3b82f6; }
+        .heisenberg-log-type.success { color: #22c55e; }
+        .heisenberg-log-type.warning { color: #eab308; }
+        .heisenberg-log-type.error { color: #ef4444; }
+        .heisenberg-log-type.system { color: #8b5cf6; }
+
+        .heisenberg-log-message {
+            color: var(--color-text);
+            word-break: break-word;
+        }
+
+        .heisenberg-monitor-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .heisenberg-monitor-stat {
+            background: var(--color-background);
+            padding: 0.5rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .heisenberg-monitor-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .heisenberg-monitor-stat-label {
+            font-size: 0.6rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="heisenberg-monitor" x-data="heisenbergMonitor">
+        <div class="heisenberg-monitor-header">
+            <div class="heisenberg-monitor-title">
+                <span>📡</span>
+                <span>Real-Time Monitor</span>
+            </div>
+            <div class="heisenberg-monitor-controls">
+                <div class="heisenberg-monitor-status">
+                    <div class="heisenberg-monitor-dot" :class="isLive ? 'live' : 'paused'"></div>
+                    <span x-text="isLive ? 'LIVE' : 'PAUSED'"></span>
+                </div>
+                <button class="heisenberg-monitor-btn" @click="toggleLive">
+                    <span x-text="isLive ? '⏸️ Pause' : '▶️ Resume'"></span>
+                </button>
+                <button class="heisenberg-monitor-btn" @click="clearLog">
+                    🗑️ Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="heisenberg-monitor-stats">
+            <div class="heisenberg-monitor-stat">
+                <div class="heisenberg-monitor-stat-value" x-text="stats.events"></div>
+                <div class="heisenberg-monitor-stat-label">Events</div>
+            </div>
+            <div class="heisenberg-monitor-stat">
+                <div class="heisenberg-monitor-stat-value" x-text="stats.calls"></div>
+                <div class="heisenberg-monitor-stat-label">API Calls</div>
+            </div>
+            <div class="heisenberg-monitor-stat">
+                <div class="heisenberg-monitor-stat-value" x-text="stats.errors"></div>
+                <div class="heisenberg-monitor-stat-label">Errors</div>
+            </div>
+            <div class="heisenberg-monitor-stat">
+                <div class="heisenberg-monitor-stat-value" x-text="stats.avgTime + 'ms'"></div>
+                <div class="heisenberg-monitor-stat-label">Avg Time</div>
+            </div>
+        </div>
+
+        <div class="heisenberg-monitor-log">
+            <template x-if="log.length === 0">
+                <div style="color: #6b7280; text-align: center; padding: 2rem;">
+                    Waiting for events...
+                </div>
+            </template>
+            <template x-for="entry in log" :key="entry.id">
+                <div class="heisenberg-log-entry">
+                    <span class="heisenberg-log-time" x-text="entry.time"></span>
+                    <span class="heisenberg-log-type" :class="entry.type" x-text="entry.type.toUpperCase()"></span>
+                    <span class="heisenberg-log-message" x-text="entry.message"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script type="module">
+        import { callJsonApi } from '/js/api.js';
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('heisenbergMonitor', () => ({
+                isLive: true,
+                log: [],
+                stats: {
+                    events: 0,
+                    calls: 0,
+                    errors: 0,
+                    avgTime: 0
+                },
+                lastMetrics: {},
+                pollInterval: null,
+                logId: 0,
+
+                async init() {
+                    this.addLog('system', 'Heisenberg Monitor initialized');
+                    this.startPolling();
+                },
+
+                startPolling() {
+                    if (this.pollInterval) clearInterval(this.pollInterval);
+                    this.pollInterval = setInterval(() => this.poll(), 2000);
+                },
+
+                stopPolling() {
+                    if (this.pollInterval) {
+                        clearInterval(this.pollInterval);
+                        this.pollInterval = null;
+                    }
+                },
+
+                async poll() {
+                    if (!this.isLive) return;
+
+                    try {
+                        const response = await callJsonApi('/heisenberg_status', {
+                            action: 'metrics'
+                        });
+
+                        if (response.ok) {
+                            this.processMetrics(response.metrics);
+                        }
+                    } catch (e) {
+                        this.stats.errors++;
+                        this.addLog('error', 'Failed to fetch metrics: ' + e.message);
+                    }
+                },
+
+                processMetrics(metrics) {
+                    if (!metrics) return;
+
+                    // Compare with last metrics to detect changes
+                    for (const [name, metric] of Object.entries(metrics)) {
+                        const last = this.lastMetrics[name];
+
+                        if (!last) {
+                            // New system
+                            this.addLog('info', `System online: ${name}`);
+                        } else if (metric.calls > last.calls) {
+                            // New calls
+                            const newCalls = metric.calls - last.calls;
+                            this.stats.calls += newCalls;
+                            this.addLog('success', `${name}: ${newCalls} call(s) (${metric.avg_time?.toFixed(2) || 0}ms avg)`);
+                        }
+
+                        if (last && metric.errors > last.errors) {
+                            const newErrors = metric.errors - last.errors;
+                            this.stats.errors += newErrors;
+                            this.addLog('error', `${name}: ${newErrors} error(s)`);
+                        }
+                    }
+
+                    // Calculate avg time across all systems
+                    const times = Object.values(metrics).map(m => m.avg_time || 0).filter(t => t > 0);
+                    if (times.length > 0) {
+                        this.stats.avgTime = Math.round(times.reduce((a, b) => a + b, 0) / times.length * 1000);
+                    }
+
+                    this.lastMetrics = JSON.parse(JSON.stringify(metrics));
+                },
+
+                addLog(type, message) {
+                    const now = new Date();
+                    const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+                    this.log.unshift({
+                        id: ++this.logId,
+                        time,
+                        type,
+                        message
+                    });
+
+                    // Keep only last 100 entries
+                    if (this.log.length > 100) {
+                        this.log = this.log.slice(0, 100);
+                    }
+
+                    this.stats.events++;
+                },
+
+                toggleLive() {
+                    this.isLive = !this.isLive;
+                    if (this.isLive) {
+                        this.addLog('system', 'Monitoring resumed');
+                        this.startPolling();
+                    } else {
+                        this.addLog('system', 'Monitoring paused');
+                        this.stopPolling();
+                    }
+                },
+
+                clearLog() {
+                    this.log = [];
+                    this.stats = { events: 0, calls: 0, errors: 0, avgTime: 0 };
+                    this.addLog('system', 'Log cleared');
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

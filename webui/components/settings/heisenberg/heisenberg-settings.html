@@ -1,0 +1,237 @@
+<html>
+<head>
+    <style>
+        .heisenberg-settings-section {
+            padding: 1rem 0;
+        }
+
+        .heisenberg-settings-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heisenberg-settings-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .heisenberg-setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--color-background);
+            border-radius: 6px;
+        }
+
+        .heisenberg-setting-label {
+            font-size: 0.85rem;
+        }
+
+        .heisenberg-setting-desc {
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+        }
+
+        .heisenberg-toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: var(--color-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .heisenberg-toggle.active {
+            background: var(--color-primary);
+        }
+
+        .heisenberg-toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .heisenberg-toggle.active::after {
+            left: 26px;
+        }
+
+        .heisenberg-input {
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-panel);
+            color: var(--color-text);
+            width: 100px;
+        }
+
+        .heisenberg-select {
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-panel);
+            color: var(--color-text);
+        }
+    </style>
+</head>
+<body>
+    <div class="heisenberg-settings-section" x-data="heisenbergSettings">
+        <div class="heisenberg-settings-title">
+            <span>⚙️</span>
+            <span>Heisenberg Configuration</span>
+        </div>
+
+        <div class="heisenberg-settings-grid">
+            <!-- Auto Initialize -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Auto Initialize</div>
+                    <div class="heisenberg-setting-desc">Initialize Heisenberg on agent start</div>
+                </div>
+                <div class="heisenberg-toggle"
+                     :class="{'active': config.autoInit}"
+                     @click="toggleSetting('autoInit')">
+                </div>
+            </div>
+
+            <!-- Swarm Size -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Swarm Size</div>
+                    <div class="heisenberg-setting-desc">Number of agents in swarm intelligence</div>
+                </div>
+                <input type="number"
+                       class="heisenberg-input"
+                       x-model="config.swarmSize"
+                       min="8"
+                       max="128"
+                       @change="saveConfig()">
+            </div>
+
+            <!-- Processing Strategy -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Default Strategy</div>
+                    <div class="heisenberg-setting-desc">Default task processing strategy</div>
+                </div>
+                <select class="heisenberg-select"
+                        x-model="config.defaultStrategy"
+                        @change="saveConfig()">
+                    <option value="auto">Auto</option>
+                    <option value="parallel">Parallel</option>
+                    <option value="sequential">Sequential</option>
+                    <option value="consensus">Consensus</option>
+                    <option value="cascade">Cascade</option>
+                </select>
+            </div>
+
+            <!-- Quantum Branches -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Quantum Branches</div>
+                    <div class="heisenberg-setting-desc">Max parallel quantum branches</div>
+                </div>
+                <input type="number"
+                       class="heisenberg-input"
+                       x-model="config.quantumBranches"
+                       min="2"
+                       max="32"
+                       @change="saveConfig()">
+            </div>
+
+            <!-- Chaos Factor -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Chaos Factor</div>
+                    <div class="heisenberg-setting-desc">Creativity randomness (0-1)</div>
+                </div>
+                <input type="number"
+                       class="heisenberg-input"
+                       x-model="config.chaosFactor"
+                       min="0"
+                       max="1"
+                       step="0.1"
+                       @change="saveConfig()">
+            </div>
+
+            <!-- Memory Decay -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Memory Decay</div>
+                    <div class="heisenberg-setting-desc">Memory importance decay rate</div>
+                </div>
+                <input type="number"
+                       class="heisenberg-input"
+                       x-model="config.memoryDecay"
+                       min="0"
+                       max="1"
+                       step="0.01"
+                       @change="saveConfig()">
+            </div>
+
+            <!-- Debug Mode -->
+            <div class="heisenberg-setting-item">
+                <div>
+                    <div class="heisenberg-setting-label">Debug Mode</div>
+                    <div class="heisenberg-setting-desc">Enable verbose logging</div>
+                </div>
+                <div class="heisenberg-toggle"
+                     :class="{'active': config.debugMode}"
+                     @click="toggleSetting('debugMode')">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('heisenbergSettings', () => ({
+                config: {
+                    autoInit: true,
+                    swarmSize: 64,
+                    defaultStrategy: 'auto',
+                    quantumBranches: 8,
+                    chaosFactor: 0.3,
+                    memoryDecay: 0.1,
+                    debugMode: false
+                },
+
+                init() {
+                    this.loadConfig();
+                },
+
+                loadConfig() {
+                    const saved = localStorage.getItem('heisenberg_config');
+                    if (saved) {
+                        try {
+                            this.config = { ...this.config, ...JSON.parse(saved) };
+                        } catch (e) {
+                            console.error('Failed to load Heisenberg config:', e);
+                        }
+                    }
+                },
+
+                saveConfig() {
+                    localStorage.setItem('heisenberg_config', JSON.stringify(this.config));
+                },
+
+                toggleSetting(key) {
+                    this.config[key] = !this.config[key];
+                    this.saveConfig();
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
